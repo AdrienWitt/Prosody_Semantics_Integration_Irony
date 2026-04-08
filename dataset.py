@@ -1,4 +1,5 @@
 import os
+import re
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -6,6 +7,19 @@ from sklearn.decomposition import PCA
 from concurrent.futures import ThreadPoolExecutor
 from torch.utils.data import Dataset
 import analysis_helpers
+
+
+def _audio_stem_to_text_stem(audio_stem):
+    """
+    Map an audio file stem to its corresponding text file stem.
+    Audio files include a prosody/speaker variant between the condition prefix
+    and the item number (e.g. 'CNf3_10', 'SNnegh1_10').
+    Text files use only the prefix and item number (e.g. 'CN_10', 'SN_10').
+    """
+    m = re.match(r'^([A-Z]+)[^_]*(_\d+)$', audio_stem)
+    if m:
+        return m.group(1) + m.group(2)
+    return audio_stem  # fallback: return as-is
 
 
 class WholeBrainDataset(Dataset):
@@ -116,8 +130,8 @@ class WholeBrainDataset(Dataset):
                 ids_list.append(int(participant[1:]))
 
                 if self.use_text and self.embeddings_text_path:
-                    context_stem   = os.path.splitext(context)[0]
-                    statement_stem = os.path.splitext(statement)[0]
+                    context_stem   = _audio_stem_to_text_stem(os.path.splitext(context)[0])
+                    statement_stem = _audio_stem_to_text_stem(os.path.splitext(statement)[0])
                     if self.TEXT_EMBEDDING_TYPES[self.text_embedding_type] == "context_statement":
                         text_file = f"{context_stem}_{statement_stem}.npy"
                     else:  # statement_only
