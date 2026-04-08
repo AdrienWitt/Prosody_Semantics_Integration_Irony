@@ -42,15 +42,15 @@ def parse_arguments():
     analysis_group.add_argument("--num_jobs", type=int, default=-1,
                                help="Number of parallel jobs for voxel processing (default: -1 for all cores).")
     analysis_group.add_argument("--optimize_alpha", action="store_true",
-                               help="Optimize alpha values using LOO bootstrapping (default: False, use precomputed valphas if provided).")
+                               help="Optimize alpha values using LOPO iterations (default: False, use precomputed valphas if provided).")
     analysis_group.add_argument("--alpha_min", type=float, default=-2,
                                help="Minimum exponent for alpha values in logspace (default: -2).")
     analysis_group.add_argument("--alpha_max", type=float, default=3,
                                help="Maximum exponent for alpha values in logspace (default: 3).")
     analysis_group.add_argument("--num_alphas", type=int, default=10,
                                help="Number of alpha values to test in logspace (default: 10).")
-    analysis_group.add_argument("--nboots", type=int, default=None,
-                               help="Number of bootstrap iterations (default: number of participants).")
+    analysis_group.add_argument("--n_lopo", type=int, default=None,
+                               help="Number of LOPO iterations for alpha optimization (default: number of participants).")
     analysis_group.add_argument("--corrmin", type=float, default=0.0,
                                help="Minimum correlation threshold for fMRI correlations (default: 0.0).")
     analysis_group.add_argument("--n_splits", type=int, default=None,
@@ -64,7 +64,7 @@ def parse_arguments():
     analysis_group.add_argument("--normalize_resp", action="store_true", default=True,
                                help="Normalize response (fMRI) data before regression (default: True).")
     analysis_group.add_argument("--with_replacement", action="store_true",
-                               help="Perform bootstrapping with replacement (default: False).")
+                               help="Sample participants with replacement during LOPO alpha optimization (default: False).")
     analysis_group.add_argument("--results_dir", type=str, default="results",
                                help="Custom directory to save results (default: uses paths from analysis_helpers).")
 
@@ -86,14 +86,14 @@ def main():
           f"- Number of jobs: {args.num_jobs}\n"
           f"- Optimize alpha: {args.optimize_alpha}\n"
           f"- Alpha range: 10^{args.alpha_min} to 10^{args.alpha_max} with {args.num_alphas} values\n"
-          f"- Number of bootstraps: {args.nboots if args.nboots is not None else 'num_participants'}\n"
+          f"- Number of LOPO iterations: {args.n_lopo if args.n_lopo is not None else 'num_participants'}\n"
           f"- Correlation minimum: {args.corrmin}\n"
           f"- Number of CV splits: {args.n_splits if args.n_splits is not None else 'num_participants'}\n"
           f"- Normalize alphas: {args.normalpha}\n"
           f"- Use correlation metric: {args.use_corr}\n"
           f"- Return weights: {args.return_wt}\n"
           f"- Normalize response: {args.normalize_resp}\n"
-          f"- Bootstrap with replacement: {args.with_replacement}\n"
+          f"- LOPO with replacement: {args.with_replacement}\n"
           f"- Results directory: {args.results_dir if args.results_dir else 'default'}\n"
           f"- Included tasks: {', '.join(args.include_tasks)}")
 
@@ -123,8 +123,8 @@ def main():
     else:
         valphas = None
 
-    # Set nboots and n_splits based on arguments or default to number of participants
-    nboots = args.nboots if args.nboots is not None else len(participant_list)
+    # Set n_lopo and n_splits based on arguments or default to number of participants
+    n_lopo = args.n_lopo if args.n_lopo is not None else len(participant_list)
     n_splits = args.n_splits if args.n_splits is not None else len(participant_list)
 
     # Perform ridge regression with LOO CV
@@ -136,7 +136,7 @@ def main():
         col_groups=col_groups,
         use_pca=args.use_pca,
         pca_threshold=args.pca_threshold,
-        nboots=nboots,
+        n_lopo=n_lopo,
         corrmin=args.corrmin,
         n_splits=n_splits,
         singcutoff=1e-10,

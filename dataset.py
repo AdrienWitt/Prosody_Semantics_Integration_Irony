@@ -116,16 +116,19 @@ class WholeBrainDataset(Dataset):
                 fmri_data_list.append(fmri_masked)
 
                 if self.use_base_features:
-                    final_data.append({
-                        "context": context_cond,
-                        "semantic": statement_cond[:2],
-                        "prosody": statement_cond[-3:],
+                    row = {
                         "task": task,
                         "evaluation": evaluation,
                         "age": age,
                         "gender": gender,
                         "participant": participant,
-                    })
+                    }
+                    if self.use_text:
+                        row["context"] = context_cond
+                        row["semantic"] = statement_cond[:2]
+                    if self.use_audio:
+                        row["prosody"] = statement_cond[-3:]
+                    final_data.append(row)
 
                 ids_list.append(int(participant[1:]))
 

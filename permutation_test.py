@@ -78,7 +78,7 @@ def run_one_permutation(
         resp=resp,
         alphas=None,
         participant_ids=ids_list,
-        nboots=0,
+        n_lopo=0,
         n_splits=args.n_splits,
         corrmin=args.corrmin,
         singcutoff=1e-10,
