@@ -115,7 +115,7 @@ def main():
 
     # Handle precomputed alphas
     if not args.optimize_alpha:
-        valphas_path = os.path.join(args.results_dir, f"valphas_text_audio_base.npy")
+        valphas_path = os.path.join(args.results_dir, f"valphas_text_audio_base_{args.text_embedding_type}.npy")
         if not os.path.exists(valphas_path):
             raise ValueError("Must provide a valid --precomputed_valphas path when --optimize_alpha is False.")
         valphas = np.load(valphas_path)
@@ -165,13 +165,13 @@ def main():
 
     
     # Save corrs (mean correlations across folds) in flattened space
-    np.save(os.path.join(args.results_dir, f"correlation_map_flat_{feature_str}_{args.n_splits}.npy"), corrs)
-    np.save(os.path.join(args.results_dir, f"folds_correlation_map_flat_{feature_str}_{args.n_splits}.npy"), fold_corrs)
-    ridge_logger.info(f"Saved flattened correlations to {args.results_dir}/correlation_map_flat_{feature_str}.npy")
-    
+    np.save(os.path.join(args.results_dir, f"correlation_map_flat_{feature_str}_{args.text_embedding_type}_{args.n_splits}.npy"), corrs)
+    np.save(os.path.join(args.results_dir, f"folds_correlation_map_flat_{feature_str}_{args.text_embedding_type}_{args.n_splits}.npy"), fold_corrs)
+    ridge_logger.info(f"Saved flattened correlations to {args.results_dir}/correlation_map_flat_{feature_str}_{args.text_embedding_type}.npy")
+
     # Save valphas
     if args.optimize_alpha:
-        result_file_valphas = os.path.join(args.results_dir, f"valphas_{feature_str}.npy")
+        result_file_valphas = os.path.join(args.results_dir, f"valphas_{feature_str}_{args.text_embedding_type}.npy")
         np.save(result_file_valphas, valphas)
         ridge_logger.info(f"Saved valphas to {result_file_valphas}")
     
