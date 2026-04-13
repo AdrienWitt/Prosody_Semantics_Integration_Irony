@@ -103,7 +103,6 @@ def run_one_permutation(
         normalpha=args.normalpha,
         use_corr=args.use_corr,
         return_wt=False,
-        normalize_stim=args.normalize_stim,
         normalize_resp=args.normalize_resp,
         n_jobs=-1,
         with_replacement=False,
