@@ -30,7 +30,7 @@ def ridge_cv(stim_df, resp, alphas, participant_ids,
              col_groups, use_pca=False, pca_threshold=0.95,
              n_lopo=50, n_splits=50,
              corrmin=0, singcutoff=1e-10, normalpha=False, use_corr=True,
-             return_wt=False, normalize_resp=True,
+             return_wt=False, normalize_stim=False, normalize_resp=True,
              n_jobs=1, with_replacement=False, optimize_alpha=True,
              valphas=None, logger=None):
     """
