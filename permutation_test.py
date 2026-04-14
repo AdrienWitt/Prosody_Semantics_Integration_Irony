@@ -64,6 +64,7 @@ def run_one_permutation(
     valphas_per_mod: dict,
     args: argparse.Namespace,
     seed: int,
+    col_groups: dict = None,
     # --- optional comparison embedding ---
     stim_df2: pd.DataFrame = None,
     cols_text2: list = None,
@@ -92,6 +93,13 @@ def run_one_permutation(
             perm_idx_audio = rng.permutation(idx)
             stim_perm.loc[idx, cols_audio] = stim_perm.loc[perm_idx_audio, cols_audio].values
 
+    def _cg(cols):
+        """Filter col_groups to only columns present in cols."""
+        if col_groups is None:
+            return {}
+        s = set(cols)
+        return {k: [c for c in v if c in s] for k, v in col_groups.items()}
+
     _ridge_kwargs_base = dict(
         resp=resp,
         alphas=None,
@@ -115,16 +123,19 @@ def run_one_permutation(
 
     if "text" in args.include_mod:
         _, corr_text, _, _, _ = ridge_cv(stim_df=stim_perm[cols_text],
+                                          col_groups=_cg(cols_text),
                                           valphas=valphas_per_mod["text"], **_ridge_kwargs_base)
         results["text"] = corr_text
 
     if "audio" in args.include_mod:
         _, corr_audio, _, _, _ = ridge_cv(stim_df=stim_perm[cols_audio],
+                                           col_groups=_cg(cols_audio),
                                            valphas=valphas_per_mod["audio"], **_ridge_kwargs_base)
         results["audio"] = corr_audio
 
     if "text_audio" in args.include_mod:
         _, corr_comb, _, _, _ = ridge_cv(stim_df=stim_perm[cols_combined],
+                                          col_groups=_cg(cols_combined),
                                           valphas=valphas_per_mod["text_audio"], **_ridge_kwargs_base)
         results["text_audio"] = corr_comb
 
@@ -132,11 +143,13 @@ def run_one_permutation(
     if stim_perm2 is not None:
         if "text" in args.include_mod:
             _, corr_text2, _, _, _ = ridge_cv(stim_df=stim_perm2[cols_text2],
+                                               col_groups=_cg(cols_text2),
                                                valphas=valphas_per_mod["text_compare"], **_ridge_kwargs_base)
             results["text_compare"] = corr_text2
 
         if "text_audio" in args.include_mod:
             _, corr_comb2, _, _, _ = ridge_cv(stim_df=stim_perm2[cols_combined2],
+                                               col_groups=_cg(cols_combined2),
                                                valphas=valphas_per_mod["text_audio_compare"], **_ridge_kwargs_base)
             results["text_audio_compare"] = corr_comb2
 
@@ -165,7 +178,7 @@ def main():
     example_nii = nib.load("data/example_fmri/p01_irony_CNf1_2_SNnegh4_2_statement_masked.nii.gz")
     resampled_mask = resample_to_img(mask, example_nii, interpolation="nearest")
 
-    stim_df, resp, ids_list, _ = analysis_helpers.load_dataset(
+    stim_df, resp, ids_list, col_groups = analysis_helpers.load_dataset(
         args, paths, participant_list, resampled_mask
     )
 
@@ -236,6 +249,7 @@ def main():
             stim_df, resp, ids_list,
             cols_text, cols_audio, cols_combined,
             valphas_per_mod, args, seed,
+            col_groups=col_groups,
             stim_df2=stim_df2,
             cols_text2=cols_text2,
             cols_combined2=cols_combined2,
