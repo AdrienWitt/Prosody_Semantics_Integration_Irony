@@ -55,7 +55,7 @@ def parse_arguments():
                                help="Minimum correlation threshold for fMRI correlations (default: 0.0).")
     analysis_group.add_argument("--n_splits", type=int, default=None,
                                help="Number of splits for cross-validation (default: number of participants for LOO CV).")
-    analysis_group.add_argument("--normalpha", action="store_true", default = True,
+    analysis_group.add_argument("--normalpha", action="store_true",
                                help="Normalize alpha values for reuse across models (default: False).")
     analysis_group.add_argument("--use_corr", action="store_true", default = True,
                                help="Use correlation as the evaluation metric (default: False).")
