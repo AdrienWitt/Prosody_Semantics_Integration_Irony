@@ -112,7 +112,7 @@ class WholeBrainDataset(Dataset):
                 if fmri is None:
                     continue
 
-                fmri_masked = fmri[voxel_indices]
+                fmri_masked = fmri.reshape(-1)[voxel_indices]
                 fmri_data_list.append(fmri_masked)
 
                 if self.use_base_features:
